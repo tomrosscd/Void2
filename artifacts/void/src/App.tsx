@@ -4,6 +4,11 @@ import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
 import SnowLeopardLogin from "@/components/SnowLeopardLogin";
 
+// localStorage key used to persist the unlocked state across sessions.
+// Change this key if you want to force everyone to re-enter the password
+// (e.g. after rotating the password).
+const UNLOCK_KEY = "void_unlocked";
+
 function Router() {
   return (
     <Switch>
@@ -14,10 +19,24 @@ function Router() {
 }
 
 function App() {
-  // Gate state — the Snow Leopard login screen sits in front of the app until
-  // the correct password is entered. Once unlocked the login overlay fades out
-  // and is unmounted, leaving the original frontend completely unchanged.
-  const [unlocked, setUnlocked] = useState(false);
+  // Initialise from localStorage so returning visitors skip the login screen.
+  // Falls back to false (show login) if the key is absent or storage is unavailable.
+  const [unlocked, setUnlocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(UNLOCK_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleUnlock = () => {
+    try {
+      localStorage.setItem(UNLOCK_KEY, "1");
+    } catch {
+      // localStorage unavailable (private browsing, storage quota) — session-only unlock
+    }
+    setUnlocked(true);
+  };
 
   return (
     <>
@@ -26,8 +45,8 @@ function App() {
         <Router />
       </WouterRouter>
 
-      {/* Snow Leopard login overlay — rendered on top until dismissed */}
-      {!unlocked && <SnowLeopardLogin onUnlock={() => setUnlocked(true)} />}
+      {/* Snow Leopard login overlay — skipped entirely for returning visitors */}
+      {!unlocked && <SnowLeopardLogin onUnlock={handleUnlock} />}
     </>
   );
 }

@@ -80,4 +80,16 @@ export const projects: Project[] = [
     kind: "Web App",
     image: "/coverart/Sidekick_V2.png",
   },
+  {
+    id: 5,
+    title: "Snake",
+    description: "A little game",
+    color: "#1f0a00",
+    accent: "#e85d04",
+    url: "http://snake.tomross.work/",
+    size: "—",
+    date: "2026",
+    kind: "Game",
+    image: "/coverart/Snake.png",
+  },
 ];
