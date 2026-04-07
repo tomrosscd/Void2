@@ -92,4 +92,16 @@ export const projects: Project[] = [
     kind: "Game",
     image: "/coverart/Snake.png",
   },
+  {
+    id: 6,
+    title: "Buzz [Broken]",
+    description: "Office check in app that doesn't work",
+    color: "#1f0a00",
+    accent: "#e85d04",
+    url: "h#",
+    size: "—",
+    date: "2026",
+    kind: "App",
+    image: "/coverart/buzz.png",
+  },
 ];
