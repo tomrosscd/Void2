@@ -42,7 +42,7 @@ export const projects: Project[] = [
     date: "Coming Soon",
     kind: "Web App",
     disabled: true,
-    image: "/coverart/Pochi.png",
+    image: "/coverart/pochi.png",
   },
   {
     id: 2,
@@ -54,7 +54,7 @@ export const projects: Project[] = [
     size: "—",
     date: "2024",
     kind: "Web App",
-    image: "/coverart/standup.png",
+    image: "/coverart/Standup.png",
   },
   {
     id: 3,
@@ -66,7 +66,7 @@ export const projects: Project[] = [
     size: "—",
     date: "2024",
     kind: "Web App",
-    image: "/coverart/sidekick.png",
+    image: "/coverart/Sidekick.png",
   },
   {
     id: 4,
