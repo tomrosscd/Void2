@@ -3,7 +3,9 @@ import MacOSMode from "@/components/MacOSMode";
 import VoidMode from "@/components/VoidMode";
 
 export default function Home() {
-  const [mode, setMode] = useState<"void" | "macos">("void");
+  // Default to the macOS Leopard view on first load.
+  // Toggle still works — users can switch to "void" and back freely.
+  const [mode, setMode] = useState<"void" | "macos">("macos");
   const [transitioning, setTransitioning] = useState(false);
 
   const toggleMode = useCallback(() => {

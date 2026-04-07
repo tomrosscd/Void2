@@ -1,80 +1,83 @@
 export interface Project {
   id: number;
+  /** Display title shown in both views */
   title: string;
   description: string;
+  /** Background colour used as fallback when no cover image exists */
   color: string;
+  /** Accent colour used for glow / gradient overlays */
   accent: string;
+  /**
+   * External URL for the project.
+   * Leave as "#" for disabled entries — click handlers check `disabled` first.
+   */
   url: string;
   size: string;
   date: string;
   kind: string;
+  /**
+   * When true the entry is rendered as non-interactive in both views.
+   * No navigation on click/double-click; cursor indicates unavailability.
+   */
+  disabled?: boolean;
+  /**
+   * Path to a cover-art image served from /public/coverart/.
+   * When set, the image is used instead of the colour gradient in both
+   * the CoverFlow card and the Void-mode card thumbnail.
+   * Example: "/coverart/standup.png"
+   */
+  image?: string;
 }
 
 export const projects: Project[] = [
   {
     id: 1,
-    title: "Chromatic",
-    description: "Generative color palettes from audio input",
-    color: "#1a0533",
-    accent: "#c77dff",
+    // "[Coming Soon]" is part of the display title — renders in both views
+    title: "Pochi [Coming Soon]",
+    description: "A new project — coming soon",
+    color: "#1a0a2e",
+    accent: "#9d4edd",
     url: "#",
-    size: "3.2 MB",
-    date: "Apr 6, 2024, 9:12 AM",
-    kind: "Web Experiment",
+    size: "—",
+    date: "Coming Soon",
+    kind: "Web App",
+    disabled: true,
+    image: "/coverart/Pochi.png",
   },
   {
     id: 2,
-    title: "Drift",
-    description: "Physics-based particle systems in the browser",
+    title: "Standup",
+    description: "Daily async standup tool",
     color: "#001a2c",
     accent: "#48cae4",
-    url: "#",
-    size: "1.8 MB",
-    date: "Mar 28, 2024, 3:45 PM",
-    kind: "Web Experiment",
+    url: "http://standup.tomross.work/",
+    size: "—",
+    date: "2024",
+    kind: "Web App",
+    image: "/coverart/standup.png",
   },
   {
     id: 3,
-    title: "Mnemonic",
-    description: "Spatial memory palace built with WebXR",
+    title: "Sidekick",
+    description: "Your AI-powered sidekick",
     color: "#0d1a00",
     accent: "#80b918",
-    url: "#",
-    size: "8.6 MB",
-    date: "Mar 15, 2024, 11:22 AM",
+    url: "http://sidekick.tomross.work/",
+    size: "—",
+    date: "2024",
     kind: "Web App",
+    image: "/coverart/sidekick.png",
   },
   {
     id: 4,
-    title: "Ferrous",
-    description: "Real-time rust simulation on the GPU",
+    title: "Sidekick V2",
+    description: "Sidekick, redesigned from the ground up",
     color: "#1f0a00",
     accent: "#e85d04",
-    url: "#",
-    size: "5.1 MB",
-    date: "Feb 20, 2024, 7:58 PM",
-    kind: "Web Experiment",
-  },
-  {
-    id: 5,
-    title: "Liminal",
-    description: "Procedural architecture generator for liminal spaces",
-    color: "#0f0f1a",
-    accent: "#9d8df1",
-    url: "#",
-    size: "4.4 MB",
-    date: "Jan 30, 2024, 2:14 PM",
+    url: "http://sidekick2.tomross.work/",
+    size: "—",
+    date: "2024",
     kind: "Web App",
-  },
-  {
-    id: 6,
-    title: "Telemetry",
-    description: "Live data sculpture from your device sensors",
-    color: "#001a1a",
-    accent: "#2ec4b6",
-    url: "#",
-    size: "2.7 MB",
-    date: "Jan 5, 2024, 10:30 AM",
-    kind: "Web Experiment",
+    image: "/coverart/Sidekick_V2.png",
   },
 ];

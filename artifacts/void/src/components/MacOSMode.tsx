@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { projects } from "@/data/projects";
+import { useIsMobile } from "@/hooks/use-mobile";
 import leopardWallpaper from "@assets/OSCleoparddefaultdesktop_1775484245631.jpg";
 
 interface MacOSModeProps {
@@ -7,6 +8,8 @@ interface MacOSModeProps {
 }
 
 export default function MacOSMode({ onToggle }: MacOSModeProps) {
+  const isMobile = useIsMobile();
+
   const [windowPos, setWindowPos] = useState({ x: 60, y: 30 });
   const [windowSize, setWindowSize] = useState({ w: 860, h: 580 });
   const [dragging, setDragging] = useState(false);
@@ -111,10 +114,14 @@ export default function MacOSMode({ onToggle }: MacOSModeProps) {
         ref={windowRef}
         style={{
           position: "absolute",
-          left: windowPos.x,
-          top: windowPos.y,
-          width: windowSize.w,
-          height: windowSize.h,
+          // On mobile: centre the window at 2.5% from the left edge so it fills 95vw.
+          // On desktop: use the draggable pixel position from state.
+          left: isMobile ? "2.5%" : windowPos.x,
+          top: isMobile ? 30 : windowPos.y,
+          // On mobile: 95vw wide, fill most of the viewport height below the menu bar.
+          // On desktop: use the resizable pixel dimensions from state.
+          width: isMobile ? "95vw" : windowSize.w,
+          height: isMobile ? "calc(100dvh - 60px)" : windowSize.h,
           display: "flex",
           flexDirection: "column",
           borderRadius: 8,
@@ -122,14 +129,18 @@ export default function MacOSMode({ onToggle }: MacOSModeProps) {
           boxShadow:
             "0 28px 80px rgba(0,0,0,0.85), 0 8px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12)",
           border: "1px solid rgba(0,0,0,0.8)",
-          minWidth: 500,
+          minWidth: isMobile ? 0 : 500,
           minHeight: 320,
         }}
       >
-        <LeopardTitleBar onMouseDown={startDrag} />
+        {/* Disable drag on mobile — window position is viewport-relative */}
+        <LeopardTitleBar onMouseDown={isMobile ? () => {} : startDrag} />
         <LeopardToolbar />
         <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-          <LeopardSidebar selectedIndex={selectedIndex} onSelect={selectProject} />
+          {/* Sidebar hidden on mobile — all other functionality remains intact */}
+          {!isMobile && (
+            <LeopardSidebar selectedIndex={selectedIndex} onSelect={selectProject} />
+          )}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "#2e2e2e" }}>
             <LeopardCoverFlow
               activeIndex={activeIndex}
@@ -148,7 +159,10 @@ export default function MacOSMode({ onToggle }: MacOSModeProps) {
         <LeopardStatusBar selectedIndex={selectedIndex} />
       </div>
 
-      <LeopardDock onToggle={onToggle} />
+      {/* Dock is hidden via display:none — HTML and JS are fully preserved for future use */}
+      <div style={{ display: "none" }}>
+        <LeopardDock onToggle={onToggle} />
+      </div>
     </div>
   );
 }
@@ -760,8 +774,12 @@ function LeopardCoverFlow({
               key={project.id}
               style={getCardStyle(i)}
               onClick={() => {
-                if (i === activeIndex) window.open(project.url, "_blank");
-                else setActiveIndex(i);
+                if (i === activeIndex) {
+                  // Disabled entries cannot be navigated to
+                  if (!project.disabled) window.open(project.url, "_blank");
+                } else {
+                  setActiveIndex(i);
+                }
               }}
             >
               <CoverFlowCard project={project} isActive={i === activeIndex} cardW={CARD_W} cardH={CARD_H} />
@@ -876,13 +894,19 @@ function CoverFlowCard({
 }) {
   return (
     <div style={{ width: cardW, height: cardH * 2, position: "relative" }}>
+      {/* Primary card face — cover image when available, gradient fallback otherwise */}
       <div
         style={{
           width: cardW,
           height: cardH,
           borderRadius: 4,
           overflow: "hidden",
-          background: `linear-gradient(135deg, ${project.color} 0%, #0a0a14 100%)`,
+          background: project.image
+            ? "#000"
+            : `linear-gradient(135deg, ${project.color} 0%, #0a0a14 100%)`,
+          backgroundImage: project.image ? `url(${project.image})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           position: "relative",
           border: isActive ? "2px solid rgba(255,255,255,0.35)" : "1px solid rgba(255,255,255,0.12)",
           boxShadow: isActive
@@ -890,14 +914,19 @@ function CoverFlowCard({
             : "0 3px 10px rgba(0,0,0,0.5)",
         }}
       >
-        <div style={{
-          position: "absolute", inset: 0,
-          background: `radial-gradient(circle at 30% 35%, ${project.accent}66 0%, transparent 65%)`,
-        }} />
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%)",
-        }} />
+        {/* Overlays only shown when there is no cover image */}
+        {!project.image && (
+          <>
+            <div style={{
+              position: "absolute", inset: 0,
+              background: `radial-gradient(circle at 30% 35%, ${project.accent}66 0%, transparent 65%)`,
+            }} />
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%)",
+            }} />
+          </>
+        )}
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0,
           padding: "20px 8px 6px",
@@ -909,12 +938,18 @@ function CoverFlowCard({
         </div>
       </div>
 
+      {/* Reflection — mirrors the card face */}
       <div
         style={{
           width: cardW,
           height: cardH,
           overflow: "hidden",
-          background: `linear-gradient(135deg, ${project.color} 0%, #0a0a14 100%)`,
+          background: project.image
+            ? "#000"
+            : `linear-gradient(135deg, ${project.color} 0%, #0a0a14 100%)`,
+          backgroundImage: project.image ? `url(${project.image})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           transform: "scaleY(-1)",
           maskImage: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 70%)",
           WebkitMaskImage: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 70%)",
@@ -922,10 +957,12 @@ function CoverFlowCard({
           marginTop: 1,
         }}
       >
-        <div style={{
-          position: "absolute", inset: 0,
-          background: `radial-gradient(circle at 30% 65%, ${project.accent}55 0%, transparent 65%)`,
-        }} />
+        {!project.image && (
+          <div style={{
+            position: "absolute", inset: 0,
+            background: `radial-gradient(circle at 30% 65%, ${project.accent}55 0%, transparent 65%)`,
+          }} />
+        )}
       </div>
     </div>
   );
@@ -1045,11 +1082,13 @@ function LeopardListView({
               onMouseEnter={() => setHovRow(i)}
               onMouseLeave={() => setHovRow(null)}
               onClick={() => onSelect(i)}
-              onDoubleClick={() => window.open(row.url, "_blank")}
+              // Disabled entries cannot be opened — guard prevents navigation
+              onDoubleClick={() => !row.disabled && window.open(row.url, "_blank")}
               style={{
                 display: "flex",
                 alignItems: "center",
-                cursor: "default",
+                cursor: row.disabled ? "not-allowed" : "default",
+                opacity: row.disabled ? 0.55 : 1,
                 background: isSelected
                   ? "linear-gradient(180deg, #4a85d8 0%, #2f65c0 100%)"
                   : i % 2 === 0 ? "#fff" : "#f5f5f5",
@@ -1057,17 +1096,25 @@ function LeopardListView({
               }}
             >
               <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 5, padding: "3px 8px" }}>
+                {/* Row icon — cover image thumbnail when available, gradient swatch otherwise */}
                 <div
                   style={{
                     width: 18, height: 18, borderRadius: 3,
-                    background: `linear-gradient(135deg, ${row.color} 0%, #1a1a1a 100%)`,
+                    background: row.image
+                      ? "#000"
+                      : `linear-gradient(135deg, ${row.color} 0%, #1a1a1a 100%)`,
+                    backgroundImage: row.image ? `url(${row.image})` : undefined,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                     flexShrink: 0, overflow: "hidden", position: "relative",
                   }}
                 >
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    background: `radial-gradient(circle at 30% 35%, ${row.accent}88 0%, transparent 70%)`,
-                  }} />
+                  {!row.image && (
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: `radial-gradient(circle at 30% 35%, ${row.accent}88 0%, transparent 70%)`,
+                    }} />
+                  )}
                 </div>
                 <span style={{ fontSize: "0.72rem", color: isSelected ? "#fff" : "rgba(0,0,0,0.8)", fontWeight: 400 }}>
                   {row.title}

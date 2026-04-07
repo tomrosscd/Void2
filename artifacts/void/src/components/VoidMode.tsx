@@ -271,90 +271,116 @@ export default function VoidMode({ onToggle }: VoidModeProps) {
                   transition: `opacity 0.6s ease ${i * 0.05}s, transform 0.6s ease ${i * 0.05}s`,
                 }}
               >
-                <a
-                  href={project.url}
-                  style={{ textDecoration: "none", display: "block" }}
-                >
-                  <div
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.09)",
-                      borderRadius: 16,
-                      overflow: "hidden",
-                      backdropFilter: "blur(16px)",
-                      WebkitBackdropFilter: "blur(16px)",
-                      transition: "all 0.3s ease",
-                      cursor: "none",
-                    }}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget as HTMLDivElement;
-                      el.style.background = "rgba(255,255,255,0.08)";
-                      el.style.borderColor = "rgba(255,255,255,0.18)";
-                      el.style.transform = "translateY(-4px)";
-                      el.style.boxShadow = `0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)`;
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget as HTMLDivElement;
-                      el.style.background = "rgba(255,255,255,0.04)";
-                      el.style.borderColor = "rgba(255,255,255,0.09)";
-                      el.style.transform = "translateY(0)";
-                      el.style.boxShadow = "none";
-                    }}
-                  >
+                {/* Card inner — shared markup for both linked and disabled entries */}
+                {(() => {
+                  const cardInner = (
                     <div
                       style={{
-                        height: 180,
-                        background: `linear-gradient(135deg, ${project.color} 0%, #060610 100%)`,
-                        position: "relative",
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.09)",
+                        borderRadius: 16,
                         overflow: "hidden",
+                        backdropFilter: "blur(16px)",
+                        WebkitBackdropFilter: "blur(16px)",
+                        transition: "all 0.3s ease",
+                        // Disabled entries: keep default cursor; active entries use "none"
+                        // because VoidMode hides the system cursor in favour of its custom orb
+                        cursor: project.disabled ? "not-allowed" : "none",
+                        opacity: project.disabled ? 0.55 : 1,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (project.disabled) return;
+                        const el = e.currentTarget as HTMLDivElement;
+                        el.style.background = "rgba(255,255,255,0.08)";
+                        el.style.borderColor = "rgba(255,255,255,0.18)";
+                        el.style.transform = "translateY(-4px)";
+                        el.style.boxShadow = `0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)`;
+                      }}
+                      onMouseLeave={(e) => {
+                        if (project.disabled) return;
+                        const el = e.currentTarget as HTMLDivElement;
+                        el.style.background = "rgba(255,255,255,0.04)";
+                        el.style.borderColor = "rgba(255,255,255,0.09)";
+                        el.style.transform = "translateY(0)";
+                        el.style.boxShadow = "none";
                       }}
                     >
+                      {/* Thumbnail — shows cover image when available, gradient fallback otherwise */}
                       <div
                         style={{
-                          position: "absolute",
-                          inset: 0,
-                          background: `radial-gradient(circle at 30% 40%, ${project.accent}33 0%, transparent 60%)`,
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: "absolute",
-                          bottom: 16,
-                          right: 16,
-                          width: 32,
-                          height: 32,
-                          borderRadius: "50%",
-                          background: project.accent,
-                          opacity: 0.4,
-                          filter: "blur(4px)",
-                        }}
-                      />
-                    </div>
-                    <div style={{ padding: "20px 24px 24px" }}>
-                      <h2
-                        style={{
-                          fontSize: "1.1rem",
-                          fontWeight: 600,
-                          color: "rgba(255,255,255,0.88)",
-                          margin: 0,
-                          letterSpacing: "-0.01em",
+                          height: 180,
+                          background: project.image
+                            ? "#000"
+                            : `linear-gradient(135deg, ${project.color} 0%, #060610 100%)`,
+                          backgroundImage: project.image ? `url(${project.image})` : undefined,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                          position: "relative",
+                          overflow: "hidden",
                         }}
                       >
-                        {project.title}
-                      </h2>
-                      <p
-                        style={{
-                          fontSize: "0.85rem",
-                          color: "rgba(255,255,255,0.38)",
-                          marginTop: 6,
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {project.description}
-                      </p>
+                        {/* Accent glow — only shown when no image */}
+                        {!project.image && (
+                          <>
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                background: `radial-gradient(circle at 30% 40%, ${project.accent}33 0%, transparent 60%)`,
+                              }}
+                            />
+                            <div
+                              style={{
+                                position: "absolute",
+                                bottom: 16,
+                                right: 16,
+                                width: 32,
+                                height: 32,
+                                borderRadius: "50%",
+                                background: project.accent,
+                                opacity: 0.4,
+                                filter: "blur(4px)",
+                              }}
+                            />
+                          </>
+                        )}
+                      </div>
+                      <div style={{ padding: "20px 24px 24px" }}>
+                        <h2
+                          style={{
+                            fontSize: "1.1rem",
+                            fontWeight: 600,
+                            color: "rgba(255,255,255,0.88)",
+                            margin: 0,
+                            letterSpacing: "-0.01em",
+                          }}
+                        >
+                          {project.title}
+                        </h2>
+                        <p
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "rgba(255,255,255,0.38)",
+                            marginTop: 6,
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {project.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </a>
+                  );
+
+                  // Disabled entries are not wrapped in an anchor — no navigation possible
+                  if (project.disabled) {
+                    return <div style={{ textDecoration: "none", display: "block" }}>{cardInner}</div>;
+                  }
+                  return (
+                    <a href={project.url} style={{ textDecoration: "none", display: "block" }}>
+                      {cardInner}
+                    </a>
+                  );
+                })()}
               </div>
             );
           })}
